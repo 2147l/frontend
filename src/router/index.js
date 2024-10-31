@@ -3,7 +3,10 @@ import { createRouter, createWebHistory, RouterView } from 'vue-router'
 const router = createRouter({
     history: createWebHistory(),
     routes: [
-        { path: "/", component: ()=>import("@/views/LoginPage.vue")},
+        { path: "/", redirect: "/login" },
+        { name: "Login", path: "/login", component: () => import("@/views/LoginPage.vue") },
+        { name: "Find", path: "/findPassword", component: () => import("@/views/FindPasswordPage.vue") },
+        { name: "Register", path: "/register", component: () => import("@/views/RegisterPage.vue") },
         {
             path: "/home",
             component: () => import("@/layout/AppLayout.vue"),
@@ -30,10 +33,15 @@ const router = createRouter({
                 },
             ]
         },
-        { path: "/login", component: () => import("@/views/LoginPage.vue") },
-        { path: "/findPassword", component: () => import("@/views/FindPasswordPage.vue") },
-        { path: "/register", component: () => import("@/views/RegisterPage.vue") }
     ]
+})
+
+// 全局路由守卫：本地没有存token，只允许跳转登录，注册以及找回密码页面
+router.beforeEach((to, from) => {
+    if (!localStorage.getItem("token") && to.name != "Login" && to.name != "Find" && to.name != "Register") {
+        alert("请先登录");
+        return false;
+    }
 })
 
 export default router

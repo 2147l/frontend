@@ -1,4 +1,3 @@
-
 import { createApp } from 'vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -10,6 +9,11 @@ const app = createApp(App)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
+
+const baseUrl = "http://127.0.0.1:8080"   //后端地址
+// const baseUrl = ""  // mock地址
+
+app.config.globalProperties.$baseUrl = baseUrl;
 
 app.use(ElementPlus)
 app.use(router)

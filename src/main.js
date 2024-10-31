@@ -10,8 +10,8 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
 
-const baseUrl = "http://127.0.0.1:8080"   //后端地址
-// const baseUrl = ""  // mock地址
+// const baseUrl = "http://127.0.0.1:8080"   //后端地址
+const baseUrl = "http://127.0.0.1:4523/m1/4213038-0-default"  // mock地址
 
 app.config.globalProperties.$baseUrl = baseUrl;
 

@@ -29,7 +29,6 @@
                         </el-button>
                     </template>
                 </el-input>
-
             </el-form-item>
             <el-link type="primary" underline @click="router.push('/login')">
                 已有账号去登录<el-icon class="el-icon--right">

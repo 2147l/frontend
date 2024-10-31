@@ -6,12 +6,7 @@ frontend            主路径
    ├─ App.vue       启动页       
    ├─ main.js       主函数
    ├─ views         单页面目录
-   │  ├─ FavoritesPage.vue
-   │  ├─ LoginPage.vue
-   │  ├─ RegisterPage.vue
-   │  ├─ SessionPage.vue
-   │  ├─ SettingPage.vue
-   │  └─ UserInfoPage.vue
+   │  └─ LoginPage.vue
    ├─ router        页面路由配置目录
    │  └─ index.js
    ├─ layout        主页面布局

@@ -7,7 +7,7 @@
           <div class="sent-bubble">
             <div class="message-content">{{ item.content }}</div>
           </div>
-          <el-avatar :src="avatarUrl" :size="30" :style="{ right: '0' }"/>
+          <el-avatar :src="avatarUrl" :size="30" :style="{ right: '0' }" />
         </div>
         <div v-if="item.role === '系统'" class="received">
           <el-avatar :size="30" :style="{ right: '0' }">系统</el-avatar>
@@ -18,12 +18,7 @@
       </div>
     </div>
     <div class="input-area">
-      <el-input
-          v-model="state.input"
-          style="width: 600px"
-          placeholder="给系统发送消息"
-          @keyup.enter="sendMessage"
-      >
+      <el-input v-model="state.input" style="width: 600px" placeholder="给系统发送消息" @keyup.enter="sendMessage">
         <template #append>
           <el-button @click="sendMessage">发送</el-button>
         </template>
@@ -33,15 +28,16 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue';
-
+import { ElMessage } from 'element-plus';
+import { getCurrentInstance, reactive } from 'vue';
+const { proxy } = getCurrentInstance();
 const state = reactive({
   input: '',
   list: []
 });
 
 const avatarUrl = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
-const sendMessage = () => {
+const sendMessage = async () => {
   if (state.input.trim() === '') return; // 如果输入为空则不发送
 
   const message = {
@@ -50,18 +46,40 @@ const sendMessage = () => {
     role: '用户'
   };
 
-  state.list.push(message);
-  state.input = ''; // 清空输入框
+  // 向后端发送消息
+  let result = "";
+  await fetch(proxy.$baseUrl + "/chat", {
+    method: "POST",
+    body: JSON.stringify({
+      userId: "",
+      conversationId: "",
+      content: state.input,
+      defaultSystem: ""
+    })
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      if (data.code && data.code == 200) {
+        result = data.message;
+      } else {
+        ElMessage.error("发送失败");
+      }
+    })
 
-  // 模拟系统回复
-  const answer = {
-    content: '你好，我是系统，请问有什么可以帮助你的吗？',
-    time: new Date().toLocaleTimeString(),
-    role: '系统'
-  };
+  // 系统回复
+  if (result.length > 0) {
+    state.list.push(message);
+    state.list.push({
+      content: result,
+      time: new Date().toLocaleTimeString(),
+      role: '系统'
+    });
+    state.input = ''; // 清空输入框
+  }
 
-  state.list.push(answer);
 };
+
 </script>
 
 <style scoped>
@@ -103,9 +121,12 @@ const sendMessage = () => {
   padding: 10px;
   border-radius: 8px;
   max-width: 80%;
-  align-self: flex-end; /* 右对齐 */
-  margin-left: auto; /* 将其推到右侧 */
-  word-break: break-word; /* 确保长单词换行 */
+  align-self: flex-end;
+  /* 右对齐 */
+  margin-left: auto;
+  /* 将其推到右侧 */
+  word-break: break-word;
+  /* 确保长单词换行 */
 }
 
 .received {
@@ -121,13 +142,17 @@ const sendMessage = () => {
   padding: 10px;
   border-radius: 8px;
   max-width: 80%;
-  align-self: flex-start; /* 左对齐 */
-  word-break: break-word; /* 确保长单词换行 */
+  align-self: flex-start;
+  /* 左对齐 */
+  word-break: break-word;
+  /* 确保长单词换行 */
 }
 
 .message-content {
-  overflow-wrap: break-word; /* 自动换行 */
-  white-space: pre-wrap; /* 保留空格 */
+  overflow-wrap: break-word;
+  /* 自动换行 */
+  white-space: pre-wrap;
+  /* 保留空格 */
 }
 
 .input-area {

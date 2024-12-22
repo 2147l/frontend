@@ -131,7 +131,7 @@ const submitForm = async (formEl) => {
     if (!formEl) return
     await formEl.validate((valid, fields) => {
         if (valid) {
-            // 表单合法则发起注册请求
+            // 表单合法则发起修改请求
             updatePassword();
         }
     })

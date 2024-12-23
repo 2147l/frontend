@@ -62,20 +62,50 @@
       <el-divider />
       <el-button type="primary" @click="onSubmit">确认修改</el-button>
     </el-card>
+    <el-card style="width: 800px">
+      <template #header>
+        <div class="card-header">
+          <span :style="{ fontSize: '20px' }">注销账号</span>
+        </div>
+      </template>
+      <el-button type="danger" @click="dialogVisible = true">确认注销</el-button>
+    </el-card>
   </div>
+  <!-- 注销窗口 -->
+  <el-dialog v-model="dialogVisible" @closed="resetUnsubForm(unsubFormRef)" title="警告！你正在注销账号" width="500" align-center>
+    <span style="color: #f16d6d;">输入账号和密码以确认</span>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-form :model="unsubForm" ref="unsubFormRef" label-width="auto" style="padding: 10px" hide-required-asterisk>
+          <el-form-item label="账号" prop="account" :rules="{ required: true, message: '请输入账号', trigger: 'blur' }">
+            <el-input v-model="unsubForm.account" />
+          </el-form-item>
+          <el-form-item label="密码" prop="password" :rules="{ required: true, message: '请输入密码', trigger: 'blur' }">
+            <el-input v-model="unsubForm.password" type="password" />
+          </el-form-item>
+        </el-form>
+        <el-button @click="submitUnsubForm(unsubFormRef)">确认</el-button>
+        <el-button type="danger" @click="dialogVisible = false">
+          取消
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { getCurrentInstance, reactive } from "vue";
-import { ElMessage } from 'element-plus'
+import { getCurrentInstance, reactive, ref } from "vue";
+import { ElMessage } from 'element-plus';
+import router from "@/router";
 const { proxy } = getCurrentInstance();
 
+const dialogVisible = ref(false);
 const userInfo = reactive({
   avatarUrl: "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
   name: '张三',
   birth: '未设置',
   email: '123456789@szu.com',
-  phone: '12388886666',
+  phone: localStorage.getItem("userName") || '12388886666',
 })
 const passwordInfo = reactive({
   oldPassword: '',
@@ -88,6 +118,10 @@ const onSubmit = () => {
     if (passwordInfo.newPassword === passwordInfo.confirmPassword) {
       fetch(proxy.$baseUrl + "/users/password", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + localStorage.getItem("token")
+        },
         body: JSON.stringify({
           oldPassword: md5(passwordInfo.oldPassword),
           confirmNewPassword: md5(passwordInfo.newPassword)
@@ -116,6 +150,47 @@ const onSubmit = () => {
       type: 'danger'
     })
   }
+}
+
+// 注销账号
+const unsubFormRef = ref();
+const unsubForm = reactive({
+  account: "",
+  password: "",
+});
+// 提交表单前校验
+const submitUnsubForm = async (formEl) => {
+  if (!formEl) return
+  await formEl.validate((valid, fields) => {
+    if (valid) {
+      // 表单合法则发起注销请求
+      fetch(proxy.$baseUrl + "/users/unsubscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Authorization": "Bearer " + localStorage.getItem("token")
+        },
+        body: "account=" + unsubForm.account + "&password=" + md5(unsubForm.password)
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.code && data.code == 200) {
+            ElMessage.success("注销成功");
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            localStorage.removeItem("userName");
+            router.push("/login");
+          } else {
+            ElMessage.error("注销失败");
+          }
+        })
+    }
+  })
+}
+// 重置表单
+const resetUnsubForm = (formEl) => {
+  if (!formEl) return
+  formEl.resetFields()
 }
 </script>
 

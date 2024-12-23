@@ -65,7 +65,7 @@ onMounted(() => {
     })
         .then(response => response.json())
         .then(data => {
-            if (data.code == 200) {
+            if (data.code == 200 && data.conversationIds) {
                 // tableData.values = [];
                 for (let i of data.conversationIds) {
                     tableData.push({conversationId: i})

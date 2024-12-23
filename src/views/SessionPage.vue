@@ -3,7 +3,7 @@
     会话页面
     <div class="messages">
       <div v-for="(item, index) in state.list" :key="index" class="content">
-        <div v-if="item.role === '用户'" class="sent">
+        <div v-if="item.role === 'user'" class="sent">
           <div class="sent-bubble">
             <div class="message-content">
               <span v-if="item.type === 'text'">{{ item.content }}</span>
@@ -12,9 +12,9 @@
               </div>
             </div>
           </div>
-          <el-avatar :src="avatarUrl" :size="30" :style="{ right: '0' }"/>
+          <el-avatar :src="avatarUrl" :size="30" :style="{ right: '0' }" />
         </div>
-        <div v-if="item.role === '系统'" class="received">
+        <div v-if="item.role === 'assistant'" class="received">
           <el-avatar :size="30" :style="{ right: '0' }">系统</el-avatar>
           <div class="received-bubble">
             <div class="message-content">{{ item.content }}</div>
@@ -23,12 +23,7 @@
       </div>
     </div>
     <div class="input-area">
-      <el-button
-          @click="toggleRecording"
-          icon="Microphone"
-          circle
-          :type="isRecording ? 'primary' : 'default' "
-      />
+      <el-button @click="toggleRecording" icon="Microphone" circle :type="isRecording ? 'primary' : 'default'" />
       <el-input v-model="state.input" style="width: 600px" placeholder="给系统发送消息" @keyup.enter="sendMessage">
         <template #append>
           <el-button @click="sendMessage">发送</el-button>
@@ -42,13 +37,13 @@
 import { ElMessage } from 'element-plus'
 import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import { Microphone } from '@element-plus/icons-vue'
-
 import router from "@/router/index"
 const { proxy } = getCurrentInstance();
 const state = reactive({
   input: '',
   list: []
 });
+const conversationId = ref("");
 
 const avatarUrl = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
 
@@ -58,7 +53,7 @@ const sendMessage = async () => {
   const message = {
     content: state.input,
     time: new Date().toLocaleTimeString(),
-    role: '用户',
+    role: 'user',
     other: '',
     type: 'text',
   };
@@ -67,22 +62,26 @@ const sendMessage = async () => {
   let result = "";
   await fetch(proxy.$baseUrl + "/chat", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("token")
+    },
     body: JSON.stringify({
-      userId: "",
+      userId: localStorage.getItem("userId"),
       conversationId: "",
       content: state.input,
       defaultSystem: ""
     })
   })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        if (data.code && data.code == 200) {
-          result = data.message;
-        } else {
-          ElMessage.error("发送失败");
-        }
-      });
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      if (data.code && data.code == 200) {
+        result = data.message;
+      } else {
+        ElMessage.error("发送失败");
+      }
+    });
 
   // 系统回复
   if (result.length > 0) {
@@ -90,7 +89,7 @@ const sendMessage = async () => {
     state.list.push({
       content: result,
       time: new Date().toLocaleTimeString(),
-      role: '系统',
+      role: 'assistant',
       type: 'text',
       other: '',
     });
@@ -130,7 +129,7 @@ const toggleRecording = async () => {
         other: audioUrl.value, // 音频 URL
         content: '语音消息',
         time: new Date().toLocaleTimeString(),
-        role: '用户',
+        role: 'user',
         type: 'audio'
       };
       state.list.push(message);
@@ -151,20 +150,38 @@ const playAudio = (audioUrl) => {
     ElMessage.error("音频播放失败");
   });
 };
+
 onMounted(() => {
-  let res = router.currentRoute.value.query.id;
-  if (res) {
-    state.list.push({
-      content: "gap是什么意思",
-      time: new Date().toLocaleTimeString(),
-      role: '用户'
-    });
-    state.list.push({
-      content: "Gap是英语单词，意思是“缺口”、“间隔”、“差距”",
-      time: new Date().toLocaleTimeString(),
-      role: '系统'
-    });
+  if (router.currentRoute.value.query.id) {
+    conversationId.value = router.currentRoute.value.query.id;
+    fetch(proxy.$baseUrl + "/chat" + "?userId=" + localStorage.getItem("userId") + "&conversationId=" + conversationId.value, {
+      method: "GET"
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.code && data.code == 200 && data.chatMessages) {
+          for (let i of data.chatMessages) {
+            state.list.push({
+              content: i.content,
+              role: i.messageType,
+              type: 'text'
+            });
+          }
+        }
+      })
   }
+  // 模拟数据
+  // state.list.push({
+  //   content: "gap是什么意思",
+  //   time: new Date().toLocaleTimeString(),
+  //   role: 'user',
+  //   type: 'text'
+  // });
+  // state.list.push({
+  //   content: "Gap是英语单词，意思是“缺口”、“间隔”、“差距”",
+  //   time: new Date().toLocaleTimeString(),
+  //   role: 'assistant'
+  // });
 })
 
 </script>

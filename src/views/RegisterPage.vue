@@ -159,10 +159,13 @@ const resetForm = (formEl) => {
 }
 // 注册请求
 const register = () => {
-    fetch(proxy.$baseUrl + "users/register", {
+    fetch(proxy.$baseUrl + "/users/register", {
         method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-            account: ruleForm.email,
+            account: ruleForm.phone,
             password: md5(ruleForm.password)
         }),
     })
@@ -173,7 +176,7 @@ const register = () => {
                 ElMessage.success("注册成功");
                 router.push("/login");
             } else {
-                ElMessage.error("注册失败");
+                ElMessage.error("data.message");
             }
         })
 }

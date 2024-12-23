@@ -6,10 +6,10 @@
                 xxx系统登录
             </div>
             <el-form-item label="账号:" prop="account">
-                <el-input v-model="ruleForm.account" placeholder="输入邮箱"></el-input>
+                <el-input v-model="ruleForm.account" placeholder="输入账号"></el-input>
             </el-form-item>
             <el-form-item label="密码:" prop="password">
-                <el-input type="password" v-model="ruleForm.password"></el-input>
+                <el-input type="password" v-model="ruleForm.password" placeholder="输入密码"></el-input>
             </el-form-item>
             <el-link type="primary" underline @click="router.push('/findPassword')">
                 忘记密码<el-icon class="el-icon--right">
@@ -58,9 +58,12 @@ const submitForm = async (formEl) => {
     })
 }
 // 登录请求
-const login = () => {
-    fetch(proxy.$baseUrl + "/users/login", {
+const login = async () => {
+    await fetch(proxy.$baseUrl + "/users/login", {
         method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
         body: JSON.stringify({
             account: ruleForm.account,
             password: md5(ruleForm.password)
@@ -71,12 +74,32 @@ const login = () => {
             console.log(data);
             if (data.code && data.code == 200) {
                 localStorage.setItem("token", data.data);
-                ElMessage.success("登录成功");
-                router.push("home/session");
             } else {
                 ElMessage.error("登录失败");
             }
         })
+    // 测试token是否有效
+    if (localStorage.getItem("token")) {
+        await fetch(proxy.$baseUrl + "/users/welcome", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.code && data.code == 200) {
+                    localStorage.setItem("userId", data.data.userId);
+                    localStorage.setItem("userName", data.data.username);
+                    ElMessage.success("登录成功");
+                    router.push("home/session");
+                } else {
+                    ElMessage.error("登录失败");
+                }
+            })
+    }
 }
 // 测试专用跳过登录
 const fakeLogin = () => {

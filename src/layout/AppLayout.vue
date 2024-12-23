@@ -3,9 +3,9 @@
     <el-container>
       <el-header>
         <div class="row">
-          <div>xxx系统</div>
+          <div>ai对话系统</div>
           <div style="flex:1"></div>
-          <div>xxx昵称</div>
+          <div>{{ userName }}</div>
           <!--头像以及下拉菜单-->
           <div>
             <el-dropdown>
@@ -35,6 +35,10 @@
 <script setup>
 import Navigation from '@/components/Navigation.vue';
 import router from '@/router/index';
+import { getCurrentInstance } from 'vue';
+const {proxy} = getCurrentInstance(); 
+
+const userName = localStorage.getItem('userName') || '用户';
 
 const avatarUrl = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
 const goSetting = () => {
@@ -43,6 +47,16 @@ const goSetting = () => {
 // 退出登录
 // TODO：清除token
 const logout = () => {
+  fetch(proxy.$baseUrl + '/users/logout', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    }
+  })
+  localStorage.removeItem('token');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('userName');
   router.push('/login')
 }
 </script>

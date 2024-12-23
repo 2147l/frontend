@@ -40,6 +40,7 @@ const router = createRouter({
 router.beforeEach((to, from) => {
     if (!localStorage.getItem("token") && to.name != "Login" && to.name != "Find" && to.name != "Register") {
         alert("请先登录");
+        router.push("/login");
         return false;
     }
 })

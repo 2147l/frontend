@@ -84,12 +84,11 @@ const tableData = [
 
 
 const handleEdit = (row) => {
-    router.push({path: "/home/session", query: {id: row.conversationId}})
+    router.push({ path: "/home/session", query: { id: row.conversationId } })
 }
 </script>
 
 <style scoped>
-    .table-container {
-        margin: 0 50px 0 50px;
-    }
+.table-container {
+    margin: 0 50px 0 50px; }
 </style>

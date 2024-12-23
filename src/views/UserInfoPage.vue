@@ -89,8 +89,8 @@ const onSubmit = () => {
       fetch(proxy.$baseUrl + "/users/password", {
         method: "POST",
         body: JSON.stringify({
-          oldPassword: passwordInfo.oldPassword,
-          confirmNewPassword: passwordInfo.newPassword
+          oldPassword: md5(passwordInfo.oldPassword),
+          confirmNewPassword: md5(passwordInfo.newPassword)
         })
       })
         .then(response => response.json())

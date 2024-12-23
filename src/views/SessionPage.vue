@@ -5,9 +5,14 @@
       <div v-for="(item, index) in state.list" :key="index" class="content">
         <div v-if="item.role === '用户'" class="sent">
           <div class="sent-bubble">
-            <div class="message-content">{{ item.content }}</div>
+            <div class="message-content">
+              <span v-if="item.type === 'text'">{{ item.content }}</span>
+              <div v-if="item.type === 'audio'" @click="playAudio(item.other)">
+                <span class="audio-message">语音消息 (点击播放)</span>
+              </div>
+            </div>
           </div>
-          <el-avatar :src="avatarUrl" :size="30" :style="{ right: '0' }" />
+          <el-avatar :src="avatarUrl" :size="30" :style="{ right: '0' }"/>
         </div>
         <div v-if="item.role === '系统'" class="received">
           <el-avatar :size="30" :style="{ right: '0' }">系统</el-avatar>
@@ -18,6 +23,12 @@
       </div>
     </div>
     <div class="input-area">
+      <el-button
+          @click="toggleRecording"
+          icon="Microphone"
+          circle
+          :type="isRecording ? 'primary' : 'default' "
+      />
       <el-input v-model="state.input" style="width: 600px" placeholder="给系统发送消息" @keyup.enter="sendMessage">
         <template #append>
           <el-button @click="sendMessage">发送</el-button>
@@ -28,8 +39,10 @@
 </template>
 
 <script setup>
-import { ElMessage } from 'element-plus';
-import { getCurrentInstance, onMounted, reactive } from 'vue';
+import { ElMessage } from 'element-plus'
+import { getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import { Microphone } from '@element-plus/icons-vue'
+
 import router from "@/router/index"
 const { proxy } = getCurrentInstance();
 const state = reactive({
@@ -38,13 +51,16 @@ const state = reactive({
 });
 
 const avatarUrl = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+
 const sendMessage = async () => {
   if (state.input.trim() === '') return; // 如果输入为空则不发送
 
   const message = {
     content: state.input,
     time: new Date().toLocaleTimeString(),
-    role: '用户'
+    role: '用户',
+    other: '',
+    type: 'text',
   };
 
   // 向后端发送消息
@@ -58,15 +74,15 @@ const sendMessage = async () => {
       defaultSystem: ""
     })
   })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      if (data.code && data.code == 200) {
-        result = data.message;
-      } else {
-        ElMessage.error("发送失败");
-      }
-    })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        if (data.code && data.code == 200) {
+          result = data.message;
+        } else {
+          ElMessage.error("发送失败");
+        }
+      });
 
   // 系统回复
   if (result.length > 0) {
@@ -74,13 +90,67 @@ const sendMessage = async () => {
     state.list.push({
       content: result,
       time: new Date().toLocaleTimeString(),
-      role: '系统'
+      role: '系统',
+      type: 'text',
+      other: '',
     });
     state.input = ''; // 清空输入框
   }
-
 };
 
+let mediaRecorder = null;
+let audioChunks = [];
+const audioUrl = ref(null);
+const isRecording = ref(false);
+
+const toggleRecording = async () => {
+  if (isRecording.value) {
+    // 停止录音
+    mediaRecorder.stop();
+    isRecording.value = false;
+  } else {
+    // 开始录音
+    audioChunks = [];
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const audioUrlValue = URL.createObjectURL(audioBlob);
+
+      // 保存音频 URL
+      audioUrl.value = audioUrlValue;
+
+      // 添加到消息列表
+      const message = {
+        other: audioUrl.value, // 音频 URL
+        content: '语音消息',
+        time: new Date().toLocaleTimeString(),
+        role: '用户',
+        type: 'audio'
+      };
+      state.list.push(message);
+    };
+
+    mediaRecorder.start();
+    isRecording.value = true;
+  }
+};
+
+// 播放语音消息
+const playAudio = (audioUrl) => {
+  const audio = new Audio(audioUrl);  // 创建一个新的Audio对象
+
+  // 播放音频
+  audio.play().catch(err => {
+    console.error("播放失败：", err);
+    ElMessage.error("音频播放失败");
+  });
+};
 onMounted(() => {
   let res = router.currentRoute.value.query.id;
   if (res) {
@@ -139,11 +209,8 @@ onMounted(() => {
   border-radius: 8px;
   max-width: 80%;
   align-self: flex-end;
-  /* 右对齐 */
   margin-left: auto;
-  /* 将其推到右侧 */
   word-break: break-word;
-  /* 确保长单词换行 */
 }
 
 .received {
@@ -160,16 +227,12 @@ onMounted(() => {
   border-radius: 8px;
   max-width: 80%;
   align-self: flex-start;
-  /* 左对齐 */
   word-break: break-word;
-  /* 确保长单词换行 */
 }
 
 .message-content {
   overflow-wrap: break-word;
-  /* 自动换行 */
   white-space: pre-wrap;
-  /* 保留空格 */
 }
 
 .input-area {
@@ -178,5 +241,16 @@ onMounted(() => {
   position: fixed;
   bottom: 10px;
   z-index: 50;
+}
+
+/* 语音消息的样式 */
+.audio-message {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #007bff;
+}
+
+.audio-message:hover {
+  color: #0056b3;
 }
 </style>

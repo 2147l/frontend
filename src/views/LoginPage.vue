@@ -61,7 +61,10 @@ const submitForm = async (formEl) => {
 const login = () => {
     fetch(proxy.$baseUrl + "/users/login", {
         method: "POST",
-        body: JSON.stringify(ruleForm),
+        body: JSON.stringify({
+            account: ruleForm.account,
+            password: md5(ruleForm.password)
+        }),
     })
         .then(response => response.json())
         .then(data => {

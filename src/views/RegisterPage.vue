@@ -161,7 +161,10 @@ const resetForm = (formEl) => {
 const register = () => {
     fetch(proxy.$baseUrl + "users/register", {
         method: "POST",
-        body: JSON.stringify(ruleForm),
+        body: JSON.stringify({
+            account: ruleForm.email,
+            password: md5(ruleForm.password)
+        }),
     })
         .then(response => response.json())
         .then(data => {

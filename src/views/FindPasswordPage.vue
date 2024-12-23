@@ -145,7 +145,10 @@ const resetForm = (formEl) => {
 const updatePassword = () => {
     fetch(proxy.$baseUrl + "/users/updatePassword", {
         method: "POST",
-        body: JSON.stringify(ruleForm),
+        body: JSON.stringify({
+          oldPassword: md5(ruleForm.password),
+          confirmNewPassword: md5(ruleForm.confirmPassword)
+        }),
     })
         .then(response => response.json())
         .then(data => {

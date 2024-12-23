@@ -1,6 +1,6 @@
 <template>
     <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
-        :default-active="router.currentRoute.value.fullPath" text-color="#fff" router style="width:100%; height:100%">
+        :default-active="router.currentRoute.value.path" text-color="#fff" router style="width:100%; height:100%">
         <el-menu-item index="/home/session">
             <el-icon>
                 <ChatDotRound />

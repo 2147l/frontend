@@ -29,7 +29,8 @@
 
 <script setup>
 import { ElMessage } from 'element-plus';
-import { getCurrentInstance, reactive } from 'vue';
+import { getCurrentInstance, onMounted, reactive } from 'vue';
+import router from "@/router/index"
 const { proxy } = getCurrentInstance();
 const state = reactive({
   input: '',
@@ -79,6 +80,22 @@ const sendMessage = async () => {
   }
 
 };
+
+onMounted(() => {
+  let res = router.currentRoute.value.query.id;
+  if (res) {
+    state.list.push({
+      content: "gap是什么意思",
+      time: new Date().toLocaleTimeString(),
+      role: '用户'
+    });
+    state.list.push({
+      content: "Gap是英语单词，意思是“缺口”、“间隔”、“差距”",
+      time: new Date().toLocaleTimeString(),
+      role: '系统'
+    });
+  }
+})
 
 </script>
 

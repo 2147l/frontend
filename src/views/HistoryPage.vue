@@ -17,41 +17,66 @@
 </template>
 
 <script setup>
-const tableData = [
-    {
-        "time": "2024-12-11T10:15:30",
-        "question": "What is the capital of France?",
-        "answer": "The capital of France is Paris."
-    },
-    {
-        "time": "2024-12-11T10:16:45",
-        "question": "Explain polymorphism in Java.",
-        "answer": "Polymorphism in Java allows objects to take on many forms, typically through method overriding or interfaces."
-    },
-    {
-        "time": "2024-12-11T10:17:20",
-        "question": "What is the square root of 144?",
-        "answer": "The square root of 144 is 12."
-    },
-    {
-        "time": "2024-12-11T10:18:05",
-        "question": "What are the main principles of OOP?",
-        "answer": "The main principles of OOP are encapsulation, inheritance, polymorphism, and abstraction."
-    },
-    {
-        "time": "2024-12-11T10:19:50",
-        "question": "Define a binary tree.",
-        "answer": "A binary tree is a data structure in which each node has at most two children, referred to as the left child and the right child."
-    }
-]
+import router from "@/router/index"
+import { getCurrentInstance, onMounted, reactive } from "vue";
+const { proxy } = getCurrentInstance();
+
+// const tableData = reactive([
+//     {
+//         "conversationId": "1",
+//         "time": "2024-12-11T10:15:30",
+//         "question": "What is the capital of France?",
+//         "answer": "The capital of France is Paris."
+//     },
+//     {
+//         "conversationId": "2",
+//         "time": "2024-12-11T10:16:45",
+//         "question": "Explain polymorphism in Java.",
+//         "answer": "Polymorphism in Java allows objects to take on many forms, typically through method overriding or interfaces."
+//     },
+//     {
+//         "conversationId": "3",
+//         "time": "2024-12-11T10:17:20",
+//         "question": "What is the square root of 144?",
+//         "answer": "The square root of 144 is 12."
+//     },
+//     {
+//         "conversationId": "4",
+//         "time": "2024-12-11T10:18:05",
+//         "question": "What are the main principles of OOP?",
+//         "answer": "The main principles of OOP are encapsulation, inheritance, polymorphism, and abstraction."
+//     },
+//     {
+//         "conversationId": "5",
+//         "time": "2024-12-11T10:19:50",
+//         "question": "Define a binary tree.",
+//         "answer": "A binary tree is a data structure in which each node has at most two children, referred to as the left child and the right child."
+//     }
+// ])
+const tableData = reactive([])
 
 const handleEdit = (row) => {
-    console.log(row);
+    router.push({ path: "/home/session", query: { id: row.conversationId } })
 }
+
+onMounted(() => {
+    fetch(proxy.$baseUrl + "/getConversationIDList" + "?userId=10", {
+        method: "GET"
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.code == 200) {
+                // tableData.values = [];
+                for (let i of data.conversationIds) {
+                    tableData.push({conversationId: i})
+                }
+            }
+        })
+})
 </script>
 
 <style scoped>
-    .table-container {
-        margin: 0 50px 0 50px;
-    }
+.table-container {
+    margin: 0 50px 0 50px;
+}
 </style>

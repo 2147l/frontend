@@ -67,7 +67,7 @@ const login = () => {
         .then(data => {
             console.log(data);
             if (data.code && data.code == 200) {
-                localStorage.setItem("token", data.token);
+                localStorage.setItem("token", data.data);
                 ElMessage.success("登录成功");
                 router.push("home/session");
             } else {

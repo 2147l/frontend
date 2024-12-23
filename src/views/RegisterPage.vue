@@ -63,11 +63,11 @@ const ruleForm = reactive({
 // 具体校验规则
 const rules = {
     username: [
-        { required: true, message: "请输入昵称", trigger: "blur" },
+        { message: "请输入昵称", trigger: "blur" },
         { min: 1, max: 10, message: "昵称至多为10位", trigger: ["change", "blur"] },
     ],
     email: [
-        { required: true, message: "请输入邮箱", trigger: "blur" },
+        { message: "请输入邮箱", trigger: "blur" },
         { pattern: /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/, message: "请输入正确的邮箱", trigger: ["change","blur"] },
     ],
     phone: [
@@ -103,7 +103,7 @@ const rules = {
         },
     ],
     code: [
-        { required: true, message: "请输入验证码", trigger: "blur" },
+        { message: "请输入验证码", trigger: "blur" },
     ]
 }
 

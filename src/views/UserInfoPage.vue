@@ -8,19 +8,19 @@
       </template>
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">个人资料照片</span>
-        <el-avatar :src="userInfo.avatarUrl" :size="60" :style="{ right: '0' }"/>
+        <el-avatar :src="userInfo.avatarUrl" :size="60" :style="{ right: '0' }" />
       </div>
-      <el-divider/>
+      <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">姓名</span>
         <el-text>{{ userInfo.name }}</el-text>
       </div>
-      <el-divider/>
+      <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">生日</span>
         <el-text>{{ userInfo.birth }}</el-text>
       </div>
-      <el-divider/>
+      <el-divider />
     </el-card>
     <el-card style="width: 800px">
       <template #header>
@@ -32,7 +32,7 @@
         <span :style="{ display: 'block', width: '120px' }">电子邮件</span>
         <el-text>{{ userInfo.email }}</el-text>
       </div>
-      <el-divider/>
+      <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">电话</span>
         <el-text>{{ userInfo.phone }}</el-text>
@@ -46,30 +46,29 @@
       </template>
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">旧密码</span>
-        <el-input v-model="passwordInfo.oldPassword" placeholder="请输入旧密码" type="password"
-                  :style="{ width: '240px' }"/>
+        <el-input v-model="passwordInfo.oldPassword" placeholder="请输入旧密码" type="password" :style="{ width: '240px' }" />
       </div>
-      <el-divider/>
+      <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">新密码</span>
-        <el-input v-model="passwordInfo.newPassword" placeholder="请输入新密码" type="password"
-                  :style="{ width: '240px' }"/>
+        <el-input v-model="passwordInfo.newPassword" placeholder="请输入新密码" type="password" :style="{ width: '240px' }" />
       </div>
-      <el-divider/>
+      <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">确认密码</span>
         <el-input v-model="passwordInfo.confirmPassword" placeholder="再次输入新密码" type="password"
-                  :style="{ width: '240px' }"/>
+          :style="{ width: '240px' }" />
       </div>
-      <el-divider/>
+      <el-divider />
       <el-button type="primary" @click="onSubmit">确认修改</el-button>
     </el-card>
   </div>
 </template>
 
 <script setup>
-import {reactive} from "vue";
-import {ElMessage} from 'element-plus'
+import { getCurrentInstance, reactive } from "vue";
+import { ElMessage } from 'element-plus'
+const { proxy } = getCurrentInstance();
 
 const userInfo = reactive({
   avatarUrl: "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
@@ -84,14 +83,24 @@ const passwordInfo = reactive({
   confirmPassword: '',
 })
 // 更改密码
-// TODO：调用后端接口
 const onSubmit = () => {
   if (passwordInfo.oldPassword !== '' && passwordInfo.newPassword !== '' && passwordInfo.confirmPassword !== '') {
     if (passwordInfo.newPassword === passwordInfo.confirmPassword) {
-      ElMessage({
-        message: '密码修改成功',
-        type: 'success'
+      fetch(proxy.$baseUrl + "/users/password", {
+        method: "POST",
+        body: JSON.stringify({
+          oldPassword: passwordInfo.oldPassword,
+          confirmNewPassword: passwordInfo.newPassword
+        })
       })
+        .then(response => response.json())
+        .then(data => {
+          if (data.code && data.code == 200) {
+            ElMessage.success("密码修改成功");
+          } else {
+            ElMessage.error("修改失败");
+          }
+        })
     } else {
       ElMessage({
         message: '两次输入的密码不一致',

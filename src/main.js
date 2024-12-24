@@ -5,6 +5,7 @@ import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router/index'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 const app = createApp(App)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
@@ -16,6 +17,6 @@ const baseUrl = "http://127.0.0.1:8080"   //后端地址
 
 app.config.globalProperties.$baseUrl = baseUrl;
 
-app.use(ElementPlus)
+app.use(ElementPlus, { locale: zhCn, })
 app.use(router)
 app.mount('#app')

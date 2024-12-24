@@ -13,12 +13,13 @@
       <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">姓名</span>
-        <el-input v-model="userInfo.name" placeholder="未设置" :style="{ width: '240px' }"/>
+        <el-input v-model="userInfo.name" placeholder="未设置" :style="{ width: '240px' }" />
       </div>
       <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">生日</span>
-        <el-input v-model="userInfo.birth" placeholder="未设置" :style="{ width: '240px' }" />
+        <el-date-picker v-model="userInfo.birth" type="date" placeholder="未设置" :style="{ width: '240px' }"
+          :editable="false" clearable />
       </div>
       <el-divider />
       <div class="list-item">
@@ -124,7 +125,7 @@ const onSubmitUserInfo = () => {
     params.email = userInfo.email;
   if (userInfo.phone !== "")
     params.phone = userInfo.phone;
-  
+
   fetch(proxy.$baseUrl + "/users/updateUserInfo", {
     method: "POST",
     headers: {

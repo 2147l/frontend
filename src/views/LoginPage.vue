@@ -59,6 +59,7 @@ const submitForm = async (formEl) => {
 }
 // 登录请求
 const login = async () => {
+    localStorage.clear();
     await fetch(proxy.$baseUrl + "/users/login", {
         method: "POST",
         headers: {

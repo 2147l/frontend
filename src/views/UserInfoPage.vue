@@ -8,35 +8,30 @@
       </template>
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">个人资料照片</span>
-        <el-avatar :src="userInfo.avatarUrl" :size="60" :style="{ right: '0' }" />
+        <el-avatar :src="userInfo.avatar" :size="60" :style="{ right: '0' }" />
       </div>
       <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">姓名</span>
-        <el-text>{{ userInfo.name }}</el-text>
+        <el-input v-model="userInfo.name" placeholder="未设置" :style="{ width: '240px' }"/>
       </div>
       <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">生日</span>
-        <el-text>{{ userInfo.birth }}</el-text>
+        <el-input v-model="userInfo.birth" placeholder="未设置" :style="{ width: '240px' }" />
       </div>
       <el-divider />
-    </el-card>
-    <el-card style="width: 800px">
-      <template #header>
-        <div class="card-header">
-          <span :style="{ fontSize: '20px' }">联系信息</span>
-        </div>
-      </template>
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">电子邮件</span>
-        <el-text>{{ userInfo.email }}</el-text>
+        <el-input v-model="userInfo.email" placeholder="未设置" :style="{ width: '240px' }" />
       </div>
       <el-divider />
       <div class="list-item">
         <span :style="{ display: 'block', width: '120px' }">电话</span>
-        <el-text>{{ userInfo.phone }}</el-text>
+        <el-input v-model="userInfo.phone" placeholder="未设置" :style="{ width: '240px' }" />
       </div>
+      <el-divider />
+      <el-button type="primary" @click="onSubmitUserInfo">确认修改</el-button>
     </el-card>
     <el-card style="width: 800px">
       <template #header>
@@ -94,19 +89,80 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, reactive, ref } from "vue";
+import { getCurrentInstance, onMounted, reactive, ref } from "vue";
 import { ElMessage } from 'element-plus';
 import router from "@/router";
 const { proxy } = getCurrentInstance();
 
 const dialogVisible = ref(false);
 const userInfo = reactive({
-  avatarUrl: "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
-  name: '张三',
-  birth: '未设置',
-  email: '123456789@szu.com',
-  phone: localStorage.getItem("userName") || '12388886666',
+  avatar: "",
+  name: "",
+  birth: "",
+  email: "",
+  phone: "",
+  // avatarUrl: "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
+  // name: '张三',
+  // birth: '未设置',
+  // email: '123456789@szu.com',
+  // phone: localStorage.getItem("userName") || '12388886666',
 })
+// 更改个人信息
+const onSubmitUserInfo = () => {
+  let params = {
+    id: localStorage.getItem("userId"),
+  };
+  if (userInfo.name !== "") {
+    params.username = userInfo.name;
+  } else {
+    ElMessage.warning("姓名不能为空");
+    return;
+  }
+  if (userInfo.birth !== "")
+    params.birth = userInfo.birth;
+  if (userInfo.email !== "")
+    params.email = userInfo.email;
+  if (userInfo.phone !== "")
+    params.phone = userInfo.phone;
+  
+  fetch(proxy.$baseUrl + "/users/updateUserInfo", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("token")
+    },
+    body: JSON.stringify(params)
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.code && data.code == 200) {
+        ElMessage.success("修改成功");
+      } else {
+        ElMessage.error("修改失败");
+      }
+    })
+}
+
+onMounted(() => {
+  fetch(proxy.$baseUrl + "/users/userInfo/" + localStorage.getItem("userId"), {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("token")
+    }
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.code && data.code == 200) {
+        userInfo.avatar = data.data.avatar || "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png";
+        userInfo.name = data.data.username || "";
+        userInfo.birth = data.data.birth || "";
+        userInfo.email = data.data.email || "";
+        userInfo.phone = data.data.phone || "";
+      }
+    })
+})
+
 const passwordInfo = reactive({
   oldPassword: '',
   newPassword: '',

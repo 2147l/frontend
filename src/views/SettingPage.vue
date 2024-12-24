@@ -1,5 +1,4 @@
 <template>
-  设置页面
   <div class="wrapper">
     <el-card style="width: 800px">
       <template #header>

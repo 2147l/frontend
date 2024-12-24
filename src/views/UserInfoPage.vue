@@ -90,6 +90,7 @@
 </template>
 
 <script setup>
+import md5 from "@/utils/md5.js"
 import { getCurrentInstance, onMounted, reactive, ref } from "vue";
 import { ElMessage } from 'element-plus';
 import router from "@/router";

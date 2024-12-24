@@ -50,13 +50,18 @@ const avatarUrl = 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcp
 const sendMessage = async () => {
   if (state.input.trim() === '') return; // 如果输入为空则不发送
 
-  const message = {
+  const params = {
+    userId: localStorage.getItem("userId"),
     content: state.input,
-    time: new Date().toLocaleTimeString(),
-    role: 'user',
-    other: '',
-    type: 'text',
-  };
+    defaultSystem: "",
+  }
+  // 如果没有会话标题就使用第一个问题作为会话标题
+  if (conversationId.value) {
+    params.conversationId = conversationId.value;
+  } else {
+    conversationId.value = state.input;
+    params.conversationId = state.input;
+  }
 
   // 向后端发送消息
   let result = "";
@@ -66,12 +71,7 @@ const sendMessage = async () => {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + localStorage.getItem("token")
     },
-    body: JSON.stringify({
-      userId: localStorage.getItem("userId"),
-      conversationId: "",
-      content: state.input,
-      defaultSystem: ""
-    })
+    body: JSON.stringify(params)
   })
     .then(response => response.json())
     .then(data => {
@@ -85,7 +85,13 @@ const sendMessage = async () => {
 
   // 系统回复
   if (result.length > 0) {
-    state.list.push(message);
+    state.list.push({
+      content: state.input,
+      time: new Date().toLocaleTimeString(),
+      role: 'user',
+      type: 'text',
+      other: '',
+    });
     state.list.push({
       content: result,
       time: new Date().toLocaleTimeString(),
@@ -161,7 +167,7 @@ onMounted(() => {
       .then(data => {
         if (data.code && data.code == 200 && data.chatMessages) {
           for (let i of data.chatMessages) {
-            state.list.push({
+            state.list.unshift({
               content: i.content,
               role: i.messageType,
               type: 'text'
@@ -170,18 +176,6 @@ onMounted(() => {
         }
       })
   }
-  // 模拟数据
-  // state.list.push({
-  //   content: "gap是什么意思",
-  //   time: new Date().toLocaleTimeString(),
-  //   role: 'user',
-  //   type: 'text'
-  // });
-  // state.list.push({
-  //   content: "Gap是英语单词，意思是“缺口”、“间隔”、“差距”",
-  //   time: new Date().toLocaleTimeString(),
-  //   role: 'assistant'
-  // });
 })
 
 </script>

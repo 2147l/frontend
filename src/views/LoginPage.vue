@@ -28,6 +28,7 @@
 </template>
 
 <script setup>
+import md5 from "@/utils/md5.js"
 import router from "@/router/index"
 import { ElMessage } from "element-plus";
 import { getCurrentInstance, reactive, ref } from "vue";

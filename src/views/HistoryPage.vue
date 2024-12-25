@@ -28,15 +28,15 @@ const handleEdit = (row) => {
 }
 
 onMounted(() => {
-    fetch(proxy.$baseUrl + "/getConversationIDList" + "?userId=" + 12, {
+    fetch(proxy.$baseUrl + "/getConversationIDList" + "?userId=" + localStorage.getItem("userId"), {
         method: "GET",
     })
         .then(response => response.json())
         .then(data => {
             if (data.code == 200 && data.conversations) {
                 for (let i of data.conversations){
-                    let message1 = JSON.parse(i.lastAssistantMessage.replace(/\\"/g, '"'));
-                    let message2 = JSON.parse(i.lastUserMessage.replace(/\\"/g, '"'));
+                    let message1 = JSON.parse(i.lastUserMessage.replace(/\\"/g, '"'));
+                    let message2 = JSON.parse(i.lastAssistantMessage.replace(/\\"/g, '"'));
                     tableData.unshift({
                         id: i.conversationId,
                         question: message1.content,

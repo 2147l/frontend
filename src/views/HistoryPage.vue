@@ -35,12 +35,10 @@ onMounted(() => {
         .then(data => {
             if (data.code == 200 && data.conversations) {
                 for (let i of data.conversations){
-                    let message1 = JSON.parse(i.lastUserMessage.replace(/\\"/g, '"'));
-                    let message2 = JSON.parse(i.lastAssistantMessage.replace(/\\"/g, '"'));
                     tableData.unshift({
                         id: i.conversationId,
-                        question: message1.content,
-                        answer: message2.content,
+                        question: i.lastUserMessage,
+                        answer: i.lastAssistantMessage,
                     })
                 }
             }
